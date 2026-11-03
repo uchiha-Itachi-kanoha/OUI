@@ -1,0 +1,1477 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /ui/bootstrap:
+    get:
+      tags:
+      - UI
+      summary: Get property settings and dynamic UI field metadata
+      operationId: getUiBootstrap
+      responses:
+        "200":
+          description: UI metadata for room, person, and rent profiles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UIBootstrapResponse"
+  /settings:
+    get:
+      tags:
+      - Settings
+      summary: Get PG property settings
+      operationId: getSettings
+      responses:
+        "200":
+          description: Current property settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PropertySettingsResponse"
+    put:
+      tags:
+      - Settings
+      summary: Update PG property settings
+      operationId: updateSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PropertySettingsRequest"
+      responses:
+        "200":
+          description: Updated property settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PropertySettingsResponse"
+        "400":
+          description: Invalid settings
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /rooms/{id}:
+    get:
+      tags:
+      - Rooms
+      summary: Get a room profile
+      operationId: get
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: "Room profile, including who lives there now"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RoomResponse"
+        "404":
+          description: Room not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+    put:
+      tags:
+      - Rooms
+      summary: Edit a room
+      operationId: update
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomRequest"
+        required: true
+      responses:
+        "200":
+          description: Room updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RoomResponse"
+        "400":
+          description: Invalid room
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Room not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "409":
+          description: A room with this name already exists
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /people/{id}:
+    get:
+      tags:
+      - People
+      summary: Get a person profile
+      operationId: get_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: "Profile, current room, past stays, rent history, and ID file\
+            \ details"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PersonResponse"
+        "404":
+          description: Person not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+    put:
+      tags:
+      - People
+      summary: Edit a person
+      operationId: update_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonRequest"
+        required: true
+      responses:
+        "200":
+          description: Person updated
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PersonResponse"
+        "400":
+          description: Invalid person
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Person not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /rooms:
+    get:
+      tags:
+      - Rooms
+      summary: Fetch all rooms
+      operationId: list
+      parameters:
+      - name: occupancy
+        in: query
+        description: Omit to return every room
+        required: false
+        schema:
+          type: string
+          enum:
+          - empty
+          - semi-empty
+          - occupied
+          - maintenance
+      - name: sharing
+        in: query
+        description: "Sharing capacity, such as 3. Omit to return every sharing"
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: "Every room, with capacity, rent, occupied count, and free\
+            \ spots. Omit both filters to return all rooms."
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RoomSummaryResponse"
+        "400":
+          description: Invalid occupancy or sharing filter
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+    post:
+      tags:
+      - Rooms
+      summary: Create a room
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomRequest"
+        required: true
+      responses:
+        "201":
+          description: Room created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RoomResponse"
+        "400":
+          description: Invalid room
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "409":
+          description: A room with this name already exists
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /people:
+    get:
+      tags:
+      - People
+      summary: List people
+      operationId: list_1
+      parameters:
+      - name: stay
+        in: query
+        description: Omit to return every person
+        required: false
+        schema:
+          type: string
+          enum:
+          - current
+          - left
+      responses:
+        "200":
+          description: "People who have not left, or people who have moved out"
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PersonSummaryResponse"
+        "400":
+          description: Invalid stay filter
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+    post:
+      tags:
+      - People
+      summary: Create a person
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonRequest"
+        required: true
+      responses:
+        "201":
+          description: Person created
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PersonResponse"
+        "400":
+          description: Invalid person
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /people/{id}/shift:
+    post:
+      tags:
+      - People
+      summary: Shift a person to another room
+      operationId: shift
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoveRequest"
+        required: true
+      responses:
+        "200":
+          description: Previous stay closed and a new stay opened
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PersonResponse"
+        "400":
+          description: "No current stay, same room, or the room does not have enough\
+            \ free spots"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Person or room not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /people/{id}/payments:
+    post:
+      tags:
+      - People
+      summary: Record a rent payment
+      operationId: pay
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRequest"
+        required: true
+      responses:
+        "201":
+          description: Payment recorded
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+        "400":
+          description: "Person did not stay that month, the amount is not greater\
+            \ than zero, or the payment exceeds the balance"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Person not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /people/{id}/payments/{paymentId}/screenshot:
+    get:
+      tags:
+      - People
+      summary: Download a payment screenshot
+      operationId: downloadScreenshot
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Payment screenshot
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: "Person, payment, or screenshot not found"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+    post:
+      tags:
+      - People
+      summary: Upload a payment screenshot
+      operationId: uploadScreenshot
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
+      responses:
+        "201":
+          description: Screenshot stored
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentScreenshotResponse"
+        "200":
+          description: Screenshot replaced
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PaymentScreenshotResponse"
+        "400":
+          description: "File is empty, larger than 5 MB, or not a JPEG, PNG, WebP,\
+            \ or PDF"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Person or payment not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /people/{id}/notice:
+    post:
+      tags:
+      - People
+      summary: Record a planned leave date
+      operationId: notice
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoticeRequest"
+        required: true
+      responses:
+        "200":
+          description: Planned leave date saved on the current stay
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PersonResponse"
+        "400":
+          description: Person has no current stay
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Person not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /people/{id}/move-out:
+    post:
+      tags:
+      - People
+      summary: Move a person out
+      operationId: moveOut
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoveOutRequest"
+        required: true
+      responses:
+        "200":
+          description: Current stay closed
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PersonResponse"
+        "400":
+          description: Person has no current stay
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Person not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /people/{id}/move-in:
+    post:
+      tags:
+      - People
+      summary: Move a person into a room
+      operationId: moveIn
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoveRequest"
+        required: true
+      responses:
+        "200":
+          description: Person is now in the room
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PersonResponse"
+        "400":
+          description: "Person already has a room, or the room does not have enough\
+            \ free spots"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Person or room not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /people/{id}/identity:
+    get:
+      tags:
+      - People
+      summary: Download a person's ID file
+      operationId: downloadIdentity
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: ID file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Person or ID file not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+    post:
+      tags:
+      - People
+      summary: Upload a person's ID file
+      operationId: uploadIdentity
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
+      responses:
+        "201":
+          description: ID file stored
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/IdentityDocumentResponse"
+        "200":
+          description: ID file replaced
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/IdentityDocumentResponse"
+        "400":
+          description: "File is empty, larger than 5 MB, or not a JPEG, PNG, WebP,\
+            \ or PDF"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Person not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /rooms/name/{name}:
+    get:
+      tags:
+      - Rooms
+      summary: Fetch a room by name
+      operationId: getByName
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "Room profile, including who lives there now"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RoomResponse"
+        "400":
+          description: Room name is missing
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Room not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /revenue:
+    get:
+      tags:
+      - Rent
+      summary: Show rent collected and still outstanding
+      operationId: revenue
+      parameters:
+      - name: month
+        in: query
+        description: Omit to return every month that has a rent line. A requested
+          month is returned even when nothing has been paid.
+        required: false
+        schema:
+          type: string
+        example: 2026-11
+      responses:
+        "200":
+          description: "Every month that has a rent line, or the requested month"
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RevenueResponse"
+        "400":
+          description: Invalid month
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /rent:
+    get:
+      tags:
+      - Rent
+      summary: List rent for a month
+      operationId: list_2
+      parameters:
+      - name: month
+        in: query
+        description: "Calendar month, YYYY-MM"
+        required: false
+        schema:
+          type: string
+        example: 2026-11
+      - name: status
+        in: query
+        description: "Omit to return pending, partial, and paid"
+        required: false
+        schema:
+          type: string
+          enum:
+          - pending
+          - partial
+          - paid
+      responses:
+        "200":
+          description: One line per person who stayed that month
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RentLineResponse"
+        "400":
+          description: Invalid month or status
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /people/name/{name}:
+    get:
+      tags:
+      - People
+      summary: Find people by name
+      operationId: findByName
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Full profile for each person whose name contains the search
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PersonResponse"
+        "400":
+          description: Name is missing
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+  /people/leaving:
+    get:
+      tags:
+      - People
+      summary: List stays with a planned leave date in the next month
+      operationId: leaving
+      responses:
+        "200":
+          description: "Person, room, sharing, and rent for each planned leave"
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeavingStayResponse"
+components:
+  schemas:
+    RoomRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "101"
+          maxLength: 100
+          minLength: 0
+        sharingCapacity:
+          type: integer
+          format: int32
+          description: How many people the room can hold
+          example: 3
+          minimum: 1
+        defaultMonthlyRent:
+          type: number
+          description: Default monthly rent per person
+          example: 8000.0
+          minimum: 0.00
+        floor:
+          type: integer
+          format: int32
+          example: 1
+        ac:
+          type: boolean
+          example: true
+        attachedBathroom:
+          type: boolean
+          example: false
+        maintenance:
+          type: boolean
+          description: Temporarily take the room out of the available inventory
+          default: false
+        notes:
+          type: string
+          example: Street facing
+          maxLength: 500
+          minLength: 0
+      additionalProperties: true
+      required:
+      - defaultMonthlyRent
+      - name
+      - sharingCapacity
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        properties:
+          type: object
+          additionalProperties: {}
+    CurrentResidentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        spots:
+          type: integer
+          format: int32
+    RoomResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        sharingCapacity:
+          type: integer
+          format: int32
+        defaultMonthlyRent:
+          type: number
+        floor:
+          type: integer
+          format: int32
+        ac:
+          type: boolean
+        attachedBathroom:
+          type: boolean
+        maintenance:
+          type: boolean
+          default: false
+        status:
+          type: string
+          enum:
+          - empty
+          - semi-empty
+          - occupied
+          - maintenance
+        notes:
+          type: string
+        occupiedCount:
+          type: integer
+          format: int32
+        freeSpots:
+          type: integer
+          format: int32
+        currentResidents:
+          type: array
+          items:
+            $ref: "#/components/schemas/CurrentResidentResponse"
+      additionalProperties: true
+    PersonRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Asha Rao
+          maxLength: 100
+          minLength: 0
+        phone:
+          type: string
+          example: "9876543210"
+          maxLength: 30
+          minLength: 0
+        email:
+          type: string
+          format: email
+          example: asha@example.com
+          maxLength: 200
+          minLength: 0
+        notes:
+          type: string
+          example: "Emergency contact: Ravi, 9988776655"
+          maxLength: 500
+          minLength: 0
+      additionalProperties: true
+      required:
+      - name
+      - phone
+    CurrentRoomResponse:
+      type: object
+      properties:
+        roomId:
+          type: integer
+          format: int64
+        roomName:
+          type: string
+        sharingCapacity:
+          type: integer
+          format: int32
+        moveInDate:
+          type: string
+          format: date
+        spots:
+          type: integer
+          format: int32
+        agreedRent:
+          type: number
+        plannedLeaveDate:
+          type: string
+          format: date
+    IdentityDocumentResponse:
+      type: object
+      properties:
+        fileName:
+          type: string
+        contentType:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int32
+    PastStayResponse:
+      type: object
+      properties:
+        roomId:
+          type: integer
+          format: int64
+        roomName:
+          type: string
+        sharingCapacity:
+          type: integer
+          format: int32
+        moveInDate:
+          type: string
+          format: date
+        moveOutDate:
+          type: string
+          format: date
+        spots:
+          type: integer
+          format: int32
+        agreedRent:
+          type: number
+        plannedLeaveDate:
+          type: string
+          format: date
+    PersonResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        notes:
+          type: string
+        currentRoom:
+          $ref: "#/components/schemas/CurrentRoomResponse"
+        pastStays:
+          type: array
+          items:
+            $ref: "#/components/schemas/PastStayResponse"
+        rentHistory:
+          type: array
+          items:
+            $ref: "#/components/schemas/RentHistoryResponse"
+        identity:
+          $ref: "#/components/schemas/IdentityDocumentResponse"
+      additionalProperties: true
+    RentHistoryResponse:
+      type: object
+      properties:
+        month:
+          type: string
+        amountDue:
+          type: number
+        amountPaid:
+          type: number
+        status:
+          type: string
+    MoveRequest:
+      type: object
+      properties:
+        roomId:
+          type: integer
+          format: int64
+          example: 1
+        moveInDate:
+          type: string
+          format: date
+          example: 2026-11-03
+        spots:
+          type: integer
+          format: int32
+          description: Beds this person holds. Omit for 1.
+          example: 1
+          minimum: 1
+        agreedRent:
+          type: number
+          description: Omit to use the room's per-person rent times spots
+          example: 7500.0
+          minimum: 0.00
+      required:
+      - moveInDate
+      - roomId
+    PaymentRequest:
+      type: object
+      properties:
+        month:
+          type: string
+          description: "Calendar month, YYYY-MM"
+          example: 2026-11
+          minLength: 1
+        amount:
+          type: number
+          example: 2000.0
+          minimum: 0.01
+        paidOn:
+          type: string
+          format: date
+          example: 2026-11-05
+        note:
+          type: string
+          example: UPI
+          maxLength: 200
+          minLength: 0
+      required:
+      - amount
+      - month
+      - paidOn
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        personId:
+          type: integer
+          format: int64
+        month:
+          type: string
+        amount:
+          type: number
+        paidOn:
+          type: string
+          format: date
+        note:
+          type: string
+        amountDue:
+          type: number
+        amountPaid:
+          type: number
+        balance:
+          type: number
+        status:
+          type: string
+        screenshot:
+          $ref: "#/components/schemas/PaymentScreenshotResponse"
+    PaymentScreenshotResponse:
+      type: object
+      properties:
+        fileName:
+          type: string
+        contentType:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int32
+    NoticeRequest:
+      type: object
+      properties:
+        plannedLeaveDate:
+          type: string
+          format: date
+          example: 2026-12-03
+      required:
+      - plannedLeaveDate
+    MoveOutRequest:
+      type: object
+      properties:
+        leaveDate:
+          type: string
+          format: date
+          example: 2026-12-03
+      required:
+      - leaveDate
+    RoomSummaryResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        floor:
+          type: integer
+          format: int32
+        sharingCapacity:
+          type: integer
+          format: int32
+        defaultMonthlyRent:
+          type: number
+        occupiedCount:
+          type: integer
+          format: int32
+        freeSpots:
+          type: integer
+          format: int32
+        ac:
+          type: boolean
+        attachedBathroom:
+          type: boolean
+        maintenance:
+          type: boolean
+          default: false
+        status:
+          type: string
+          enum:
+          - empty
+          - semi-empty
+          - occupied
+          - maintenance
+      additionalProperties: true
+    RevenueResponse:
+      type: object
+      properties:
+        month:
+          type: string
+        totalDue:
+          type: number
+        collected:
+          type: number
+        outstanding:
+          type: number
+        pendingCount:
+          type: integer
+          format: int32
+        partialCount:
+          type: integer
+          format: int32
+        paidCount:
+          type: integer
+          format: int32
+    RentLineResponse:
+      type: object
+      properties:
+        personId:
+          type: integer
+          format: int64
+        personName:
+          type: string
+        roomId:
+          type: integer
+          format: int64
+        roomName:
+          type: string
+        sharingCapacity:
+          type: integer
+          format: int32
+        month:
+          type: string
+        amountDue:
+          type: number
+        amountPaid:
+          type: number
+        balance:
+          type: number
+        status:
+          type: string
+      additionalProperties: true
+    PersonSummaryResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        phone:
+          type: string
+        roomId:
+          type: integer
+          format: int64
+        roomName:
+          type: string
+      additionalProperties: true
+    LeavingStayResponse:
+      type: object
+      properties:
+        personId:
+          type: integer
+          format: int64
+        personName:
+          type: string
+        roomId:
+          type: integer
+          format: int64
+        roomName:
+          type: string
+        sharingCapacity:
+          type: integer
+          format: int32
+        agreedRent:
+          type: number
+        plannedLeaveDate:
+          type: string
+          format: date
+    PropertySettingsRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 150
+        address:
+          type: string
+          maxLength: 500
+        currency:
+          type: string
+          example: INR
+        rentDueDay:
+          type: integer
+          minimum: 1
+          maximum: 28
+      required: [name, currency, rentDueDay]
+    PropertySettingsResponse:
+      allOf:
+      - $ref: "#/components/schemas/PropertySettingsRequest"
+      - type: object
+        properties:
+          id:
+            type: integer
+            format: int64
+    UIFieldDefinition:
+      type: object
+      description: Describes a field for generic UI tables, forms, filters, and profiles
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        type:
+          type: string
+          enum: [text, number, currency, date, boolean, enum, textarea, email, phone]
+        valueType:
+          type: string
+          enum: [string, integer, number, boolean]
+        format:
+          type: string
+          description: Optional display format such as sharing or currency
+        required:
+          type: boolean
+          default: false
+        readOnly:
+          type: boolean
+          default: false
+        visibleIn:
+          type: array
+          items:
+            type: string
+            enum: [table, form, filter, profile]
+        options:
+          type: array
+          items:
+            type: string
+        optionValues:
+          type: array
+          items:
+            oneOf:
+            - type: string
+            - type: integer
+            - type: number
+        min:
+          type: number
+        max:
+          type: number
+        order:
+          type: integer
+        default:
+          description: Default value used by the generic form renderer
+        helpText:
+          type: string
+      required: [key, label, type]
+    UIBootstrapResponse:
+      type: object
+      example:
+        schemaVersion: 1
+        property:
+          id: 1
+          name: KQ Residency
+          address: 12 Residency Road, Bengaluru
+          currency: INR
+          rentDueDay: 5
+        fields:
+          room:
+          - key: id
+            label: Room ID
+            type: number
+            readOnly: true
+            visibleIn: [table, profile]
+            order: 1
+          - key: floor
+            label: Floor
+            type: number
+            visibleIn: [form, table, profile, filter]
+            order: 2
+          - key: sharingCapacity
+            label: Sharing
+            type: enum
+            valueType: integer
+            format: sharing
+            options: [Single sharing, Double sharing, Triple sharing]
+            optionValues: [1, 2, 3]
+            required: true
+            min: 1
+            visibleIn: [form, table, profile, filter]
+            order: 3
+          - key: defaultMonthlyRent
+            label: Rent per person / month
+            type: currency
+            required: true
+            min: 0
+            visibleIn: [form, table, profile]
+            order: 4
+          - key: maintenance
+            label: Maintenance
+            type: boolean
+            visibleIn: [form, table, profile, filter]
+          person:
+          - key: id
+            label: Person ID
+            type: number
+            readOnly: true
+            visibleIn: [table, profile]
+          - key: name
+            label: Full name
+            type: text
+            required: true
+            visibleIn: [form, table, profile]
+          - key: phone
+            label: Phone
+            type: phone
+            required: true
+            visibleIn: [form, table, profile]
+          - key: email
+            label: Email
+            type: email
+            visibleIn: [form, table, profile]
+          - key: roomName
+            label: Current room
+            type: text
+            readOnly: true
+            visibleIn: [table, profile]
+          rent:
+          - key: amountDue
+            label: Amount due
+            type: currency
+            visibleIn: [table, profile]
+          - key: amountPaid
+            label: Amount paid
+            type: currency
+            visibleIn: [table, profile]
+          - key: balance
+            label: Balance
+            type: currency
+            visibleIn: [table, profile]
+          - key: status
+            label: Rent status
+            type: enum
+            options: [pending, partial, paid]
+            visibleIn: [table, profile, filter]
+      properties:
+        schemaVersion:
+          type: integer
+        property:
+          $ref: "#/components/schemas/PropertySettingsResponse"
+        fields:
+          type: object
+          description: Field definitions by resource. Include new room/person fields here to render them in generic forms and tables.
+          properties:
+            room:
+              type: array
+              items:
+                $ref: "#/components/schemas/UIFieldDefinition"
+            person:
+              type: array
+              items:
+                $ref: "#/components/schemas/UIFieldDefinition"
+            rent:
+              type: array
+              items:
+                $ref: "#/components/schemas/UIFieldDefinition"
+            settings:
+              type: array
+              items:
+                $ref: "#/components/schemas/UIFieldDefinition"
+          additionalProperties:
+            type: array
+            items:
+              $ref: "#/components/schemas/UIFieldDefinition"
+      required: [schemaVersion, fields]
